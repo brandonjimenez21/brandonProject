@@ -1,0 +1,6 @@
+module:com.example.brandonProject
+com.example.brandonProject
+com.example.brandonProject.controllers
+com.example.brandonProject.model
+com.example.brandonProject.view
+com.example.brandonProject.view.alert
