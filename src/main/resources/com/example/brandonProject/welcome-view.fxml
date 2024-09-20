@@ -9,6 +9,6 @@
     <children>
         <Label text="Nickname" />
         <TextField fx:id="nicknameTextField" onKeyPressed="#onKeyPressedNicknameTextField" />
-        <Button mnemonicParsing="false" onAction="#onActionSendButton" style="-fx-background-color: red;" text="Send" textFill="#ebeaea" />
+        <Button mnemonicParsing="false" onAction="#onActionSendButton" style="-fx-background-color: red;" text="Comenzar" textFill="#ebeaea" />
     </children>
 </VBox>

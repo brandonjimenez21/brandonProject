@@ -37,12 +37,12 @@ public class GameController {
 
     //Objeto que controla el estado del juego
     private Game game;
-    private int helpCount = 1; //Contador para limitar la cantidad de ayudas
+    private int helpCount = 3; //Contador para limitar la cantidad de ayudas
 
     @FXML
     public void initialize() {
         //Inicializa el juego con la palabra secreta 'javafx'
-        game = new Game("javafx");
+        game = new Game("javáfx");
         //Dibuja el sol al inicio del juego
         drawSun(0);
         //Actualiza la interfaz con el estado actual del juego
@@ -75,7 +75,9 @@ public class GameController {
         if (helpCount > 0 && !game.isGameOver()) {
             char hint = game.revealLetter();  // Obtener una letra revelada
             helpCount--;  //Reducir el contador de ayudas
-            helpButton.setDisable(true);  //Desactivar el boton de ayuda
+            if (helpCount == 0){
+                helpButton.setDisable(true);  //Desactivar el boton de ayuda
+            }
             updateView();  //Actualizar la vista
         } else if (game.isGameOver()) {
             attemptsLabel.setText("El juego ha terminado. Reinicia para usar la ayuda.");
@@ -85,8 +87,8 @@ public class GameController {
     @FXML
     private void handleRestart() {
         //Reiniciar el juego y restaura los valores iniciales
-        game = new Game("javafx");
-        helpCount = 1;
+        game = new Game("javáfx");
+        helpCount = 3;
         updateView();
         inputField.setDisable(false);
         restartButton.setDisable(true);

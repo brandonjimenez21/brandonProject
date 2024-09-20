@@ -9,6 +9,10 @@ package com.example.brandonProject.model;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.text.Normalizer;
 
 public class Game {
     private final String secretWord;  // La palabra secreta que el jugador debe adivinar
@@ -30,15 +34,24 @@ public class Game {
     }
 
     /**
-     * Take a player guess and update the game state
+     * Takes a player's guess and updates the game state.
+     * <p>
+     * This method processes the player's guessed letter by normalizing it (removing any accents) and checking
+     * if it exists in the secret word. If the guessed letter is in the secret word, the current guess
+     * is updated. If the letter is incorrect, the number of attempts is incremented.
+     * <p>
+     * The method ignores repeated guesses and stops processing if the game is already over.
      *
-     * @param letter The letter guessed by the player
+     * @param letter The letter guessed by the player. Accents will be removed, so 'a' and 'á' are treated as equivalent.
      */
 
     public void makeGuess(char letter) {
         letter = Character.toLowerCase(letter);
 
-        // Si la letra ya ha sido adivinada antes, no hacemos nada
+        //Normalizar la letra ingresada por el usuario (eliminar tildes)
+        letter = normalizeCharacter(letter);
+
+        //Si la letra ya ha sido adivinada antes, no hacemos nada
         if (guessedLetters.contains(letter) || isGameOver()) {
             return;
         }
@@ -46,11 +59,12 @@ public class Game {
         guessedLetters.add(letter);
 
         // Si la letra esta en la palabra secreta, actualizamos la palabra adivinada
-        if (secretWord.contains(String.valueOf(letter))) {
+        if (normalizeString(secretWord).contains(String.valueOf(letter))) {
             StringBuilder newGuess = new StringBuilder(currentGuess);
             for (int i = 0; i < secretWord.length(); i++) {
-                if (secretWord.charAt(i) == letter) {
-                    newGuess.setCharAt(i, letter);
+                //Se compara la version normalizada de la letra en la palabra
+                if (normalizeCharacter(secretWord.charAt(i)) == letter) {
+                    newGuess.setCharAt(i, secretWord.charAt(i)); //Manten la letra original (con tilde o no)
                 }
             }
             currentGuess = newGuess.toString();
@@ -61,20 +75,63 @@ public class Game {
     }
 
     /**
-     * Reveal an unguessed letter as a clue
+     * Normalize a character by removing accents (tildes)
      *
-     * @return The letter revealed
+     * @param c The character eliminating accents (tildes)
+     * @return The character without accents
+     */
+    private char normalizeCharacter(char c) {
+        // Normaliza y elimina tildes
+        String normalized = Normalizer.normalize(String.valueOf(c), Normalizer.Form.NFD);
+        return normalized.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "").charAt(0);
+    }
+
+    /**
+     * Normalizes an entire string by removing accents (tildes)
+     *
+     * @param input The string that you want to normalize
+     * @return The string without accents
+     */
+    private String normalizeString(String input) {
+        return Normalizer.normalize(input, Normalizer.Form.NFD).replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+    }
+
+    /**
+     * Reveal a random unguessed letter from the secret word as a clue
+     *
+     * This method selects a random letter from the secret word that the player has not yet guessed
+     * updates the current guess with the revealed letter, and returns the letter to the caller
+     *
+     * @return The revealed letter, or '_' if there are no more unrevealed letters
      */
 
     public char revealLetter() {
+        //Lista para almacenar las letras no adivinadas
+        List<Character> unrevealedLetters = new ArrayList<>();
+
+        //Recorrer la palabra secreta y añadir las letras no adivinadas a la lista
         for (char letter : secretWord.toCharArray()) {
             if (!guessedLetters.contains(letter)) {
-                guessedLetters.add(letter);
-                currentGuess = updateCurrentGuess(letter);
-                return letter;
+                unrevealedLetters.add(letter); //Añadir las letras no adivinadas
             }
         }
-        return '_'; // No deberia llegar aqui si hay letras no adivinadas
+
+        //Verificar si hay letras no adivinadas
+        if (!unrevealedLetters.isEmpty()){
+            //Seleccionar una letra aleatoria de las no adivinadas
+            Random rand = new Random();
+            char randomLetter = unrevealedLetters.get(rand.nextInt(unrevealedLetters.size()));
+
+            //Añadir la letra revelada a las letras adivinadas
+            guessedLetters.add(randomLetter);
+
+            //Actualizar el estado de la palabra adivinada
+            currentGuess = updateCurrentGuess(randomLetter);
+
+            //Devolver la letra revelada
+            return randomLetter;
+        }
+        return '_'; //Si no quedan letras por revelar, devolver un valor por defecto
     }
 
     /**
